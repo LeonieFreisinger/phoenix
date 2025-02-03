@@ -15,6 +15,7 @@ class Framework(Enum):
     CODE_BASED = "code_based"
     CREWAI = "crewai"
     AUTOGEN = "autogen"
+    OPENAI_SWARMS = "openai_swarms"
 
 
 def instrument(project_name="code-based-agent", framework=Framework.CODE_BASED):
