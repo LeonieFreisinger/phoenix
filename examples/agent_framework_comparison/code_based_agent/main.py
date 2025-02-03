@@ -1,5 +1,6 @@
 import os
 import sys
+import logging
 
 import gradio as gr
 from openinference.semconv.trace import SpanAttributes
@@ -12,17 +13,23 @@ from utils.instrument import Framework, instrument
 
 
 def gradio_interface(message, history):
+    logging.basicConfig(level=logging.DEBUG)  # Set up logging
+    logger = logging.getLogger(__name__)  # Create a logger
+
     tracer = trace.get_tracer(__name__)
     with tracer.start_as_current_span("code_based_agent") as span:
         span.set_attribute(SpanAttributes.INPUT_VALUE, message)
         span.set_attribute(SpanAttributes.OPENINFERENCE_SPAN_KIND, "AGENT")
 
+        logger.debug(f"Received message: {message}")  # Log the received message
         message = [{"role": "user", "content": message}]
         context = {}
         TraceContextTextMapPropagator().inject(context)
         agent_response = router(message, context)
         span.set_attribute(SpanAttributes.OUTPUT_VALUE, agent_response)
         span.set_status(trace.Status(trace.StatusCode.OK))
+
+        logger.debug(f"Agent response: {agent_response}")  # Log the agent's response
         return agent_response
 
 
