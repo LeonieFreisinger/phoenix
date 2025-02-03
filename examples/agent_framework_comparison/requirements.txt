@@ -17,3 +17,4 @@ openinference-instrumentation-langchain==0.1.28
 openinference-instrumentation-llama-index==3.0.3
 openinference-instrumentation-crewai==0.1.2
 openinference-instrumentation-litellm==0.1.4
+openai-swarms==0.1.0
