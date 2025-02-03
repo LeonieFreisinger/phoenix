@@ -2,8 +2,10 @@ import json
 import sqlite3
 
 import numpy as np
+import os
 
-DATABASE_NAME = "examples/agent_framework_comparison/db/example_traces.db"
+folder_path = os.path.dirname(os.path.abspath(__file__))
+DATABASE_NAME = os.path.join(folder_path, "example_traces.db")
 TABLE_NAME = "traces"
 
 
