@@ -5,9 +5,6 @@ import sys
 sys.path.insert(1, os.path.join(sys.path[0], ".."))
 from dotenv import load_dotenv
 from openai import OpenAI
-from openinference.instrumentation import using_prompt_template
-from openinference.semconv.trace import SpanAttributes
-from opentelemetry import trace
 from prompt_templates.data_analysis_template import PROMPT_TEMPLATE, SYSTEM_PROMPT
 from skills.skill import Skill
 
@@ -65,28 +62,14 @@ class AnalyzeData(Skill):
 
         client = OpenAI()
 
-        tracer = trace.get_tracer(__name__)
-        with tracer.start_as_current_span("data_analysis_tool") as span:
-            span.set_attribute(SpanAttributes.OPENINFERENCE_SPAN_KIND, "CHAIN")
-            span.set_attribute(
-                SpanAttributes.INPUT_VALUE,
-                PROMPT_TEMPLATE.format(PROMPT=prompt, DATA=data),
-            )
-            with using_prompt_template(
-                template=PROMPT_TEMPLATE,
-                variables={"PROMPT": prompt, "DATA": data},
-                version="v0.1",
-            ):
-                response = client.chat.completions.create(
-                    model="gpt-4o",
-                    messages=[
-                        {"role": "system", "content": SYSTEM_PROMPT},
-                        {
-                            "role": "user",
-                            "content": PROMPT_TEMPLATE.format(PROMPT=prompt, DATA=data),
-                        },
-                    ],
-                )
-            analysis_result = response.choices[0].message.content
-            span.set_attribute(SpanAttributes.OUTPUT_VALUE, analysis_result)
-            return analysis_result
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {
+                    "role": "user",
+                    "content": PROMPT_TEMPLATE.format(PROMPT=prompt, DATA=data),
+                },
+            ],
+        )
+        return response.choices[0].message.content
