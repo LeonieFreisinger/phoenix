@@ -5,10 +5,6 @@ from typing import Dict, List
 sys.path.insert(1, os.path.join(sys.path[0], ".."))
 
 from dotenv import load_dotenv
-from openinference.instrumentation import using_prompt_template
-from openinference.semconv.trace import SpanAttributes
-from opentelemetry import trace
-from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator
 from prompt_templates.router_template import SYSTEM_PROMPT
 from skills.skill_map import SkillMap
 from swarm import Agent, Swarm
@@ -53,21 +49,9 @@ class SwarmRouter:
     def transfer_to_analyzer(self):
         return self.analyzer_agent
         
-    def process_query(self, query: str, parent_context: Dict) -> str:
-        tracer = trace.get_tracer(__name__)
-        propagator = TraceContextTextMapPropagator()
-        context = propagator.extract(parent_context)
-        
-        with tracer.start_as_current_span("swarm_router_call", context=context) as span:
-            span.set_attribute(SpanAttributes.OPENINFERENCE_SPAN_KIND, "CHAIN")
-            span.set_attribute(SpanAttributes.INPUT_VALUE, query)
-            
-            with using_prompt_template(template=SYSTEM_PROMPT, version="v0.1"):
-                response = self.client.run(
-                    agent=self.router_agent,
-                    messages=[{"role": "user", "content": query}]
-                )
-            
-            final_response = response.messages[-1]["content"]
-            span.set_attribute(SpanAttributes.OUTPUT_VALUE, final_response)
-            return final_response 
+    def process_query(self, query: str) -> str:
+        response = self.client.run(
+            agent=self.router_agent,
+            messages=[{"role": "user", "content": query}]
+        )
+        return response.messages[-1]["content"] 
