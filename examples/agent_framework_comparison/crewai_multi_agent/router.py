@@ -1,6 +1,5 @@
 import os
 import sys
-
 sys.path.insert(1, os.path.join(sys.path[0], ".."))
 
 from calculator import CalculatorTool
@@ -13,7 +12,6 @@ from prompt_templates.sql_generator_template import SYSTEM_PROMPT as SQL_SYSTEM_
 from sql_query import SQLQueryTool
 
 load_dotenv()
-
 
 def run_crewai(query):
     llm = ChatOpenAI(model="gpt-4o")

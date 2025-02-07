@@ -1,21 +1,16 @@
+from typing import Type
 import os
 import sys
-from typing import Type
 
 sys.path.insert(1, os.path.join(sys.path[0], ".."))
 
 from crewai.tools import BaseTool
 from db.database import run_query
-from openinference.semconv.trace import SpanAttributes
-from opentelemetry import trace
 from pydantic import BaseModel, Field
-
 
 class SQLQueryInput(BaseModel):
     """Input for SQLQueryTool."""
-
     sql_query: str = Field(description="The SQL query to retrieve dataset for data analysis.")
-
 
 class SQLQueryTool(BaseTool):
     name: str = "SQL Query Executor Tool"
@@ -33,13 +28,6 @@ class SQLQueryTool(BaseTool):
         return query
 
     def _run(self, sql_query: str) -> str:
-        tracer = trace.get_tracer(__name__)
-        with tracer.start_as_current_span("run_sql_query") as span:
-            span.set_attribute(SpanAttributes.OPENINFERENCE_SPAN_KIND, "CHAIN")
-            span.set_attribute(SpanAttributes.INPUT_VALUE, sql_query)
-
-            sanitized_query = self._sanitize_query(sql_query)
-            results = str(run_query(sanitized_query))
-
-            span.set_attribute(SpanAttributes.OUTPUT_VALUE, results)
-            return results
+        sanitized_query = self._sanitize_query(sql_query)
+        results = str(run_query(sanitized_query))
+        return results
