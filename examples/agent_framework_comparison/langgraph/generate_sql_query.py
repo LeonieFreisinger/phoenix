@@ -4,13 +4,11 @@ import sys
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.tools import tool
 from langchain_openai import ChatOpenAI
-from openinference.instrumentation import using_prompt_template
 
 sys.path.insert(1, os.path.join(sys.path[0], ".."))
 
 from db.database import get_schema, get_table, run_query
 from prompt_templates.sql_generator_template import SYSTEM_PROMPT
-
 
 @tool
 def generate_and_run_sql_query(original_prompt: str):
@@ -23,7 +21,6 @@ def generate_and_run_sql_query(original_prompt: str):
         str: The result of the SQL query.
     """
     return _generate_and_run_sql_query(original_prompt, retry=True)
-
 
 def _generate_and_run_sql_query(original_prompt: str, retry: bool = False):
     def _sanitize_query(query):
@@ -40,17 +37,12 @@ def _generate_and_run_sql_query(original_prompt: str, retry: bool = False):
     table = get_table()
     schema = get_schema()
 
-    with using_prompt_template(
-        template=SYSTEM_PROMPT,
-        variables={"SCHEMA": schema, "TABLE": table},
-        version="v0.1",
-    ):
-        model = ChatOpenAI(model="gpt-4o")
-        messages = [
-            SystemMessage(content=SYSTEM_PROMPT.format(SCHEMA=schema, TABLE=table)),
-            HumanMessage(content=original_prompt),
-        ]
-        response = model.invoke(messages)
+    model = ChatOpenAI(model="gpt-4")
+    messages = [
+        SystemMessage(content=SYSTEM_PROMPT.format(SCHEMA=schema, TABLE=table)),
+        HumanMessage(content=original_prompt),
+    ]
+    response = model.invoke(messages)
 
     sql_query = response.content
 
