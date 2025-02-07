@@ -47,3 +47,4 @@ examples/agent_framework_comparison/utils/saved_traces/*.parquet
 
 # Caches
 .pnpm-store
+examples/agent_framework_comparison/.cache
