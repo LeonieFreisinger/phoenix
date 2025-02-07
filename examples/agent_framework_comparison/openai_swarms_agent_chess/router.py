@@ -1,29 +1,17 @@
 import os
 import sys
-from typing import Dict, List
 import chess
-from typing_extensions import Annotated
-
-sys.path.insert(1, os.path.join(sys.path[0], ".."))
-
 from dotenv import load_dotenv
-from openinference.instrumentation import using_prompt_template
-from openinference.semconv.trace import SpanAttributes
-from opentelemetry import trace, context
-from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator
-from prompt_templates.router_template import SYSTEM_PROMPT
-from skills.skill_map import SkillMap
 from swarm import Agent, Swarm
 
 load_dotenv()
-
 
 class SwarmChessRouter:
     def __init__(self):
         self.client = Swarm()
         self.board = chess.Board()
         
-        # Create white player agent with more explicit instructions
+        # Create white player agent
         self.white_player = Agent(
             name="White Player",
             instructions="""You are playing chess as White. On your turn:
@@ -38,7 +26,7 @@ class SwarmChessRouter:
             ]
         )
         
-        # Create black player agent with more explicit instructions
+        # Create black player agent
         self.black_player = Agent(
             name="Black Player",
             instructions="""You are playing chess as Black. On your turn:
@@ -76,14 +64,14 @@ class SwarmChessRouter:
         current_player = self.white_player if self.board.turn else self.black_player
         player_color = "White" if self.board.turn else "Black"
         
-        # Format board with code block for monospace display
-        board_display = f"```\n{str(self.board)}\n```"
+        # Generate initial board display for the agent's decision making
+        initial_board = f"```\n{str(self.board)}\n```"
         
         message = {
             "role": "user",
             "content": f"""It's your turn as {player_color}.
 Current board state:
-{board_display}
+{initial_board}
 
 Make your move by:
 1. Check legal moves
@@ -96,8 +84,11 @@ Make your move by:
         if not response.messages:
             return f"Error: No response from {player_color} player"
         
+        # Generate updated board display after the move
+        updated_board = f"```\n{str(self.board)}\n```"
+        
         color_indicator = "🔵" if player_color == "White" else "🔴"
         final_response = f"{color_indicator} {player_color}'s turn:\n{response.messages[-1]['content']}"
-        final_response += f"\n\nBoard after move:\n{board_display}"
+        final_response += f"\n\nBoard after move:\n{updated_board}"
         
         return final_response 

@@ -6,7 +6,6 @@ sys.path.insert(1, os.path.join(sys.path[0], ".."))
 
 import gradio as gr
 from router import SwarmChessRouter
-from utils.instrument import Framework, instrument
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
